@@ -344,23 +344,21 @@ def detect_phone_and_person(video_path, res_dict):
     event_no = 0 # 1:Phone, 2:No person, 3:Multiple persons
     sustained_detection = False
     curr = ""
-    skip_count = int(os.getenv("FRAMETOANALYSE", 90))
 
     try:
         start_time = time.time()
         logger.info("Starting phone and person detection")
         cap = cv2.VideoCapture(video_path)
+        frame_rate = cap.get(cv2.CAP_PROP_FPS)
+        frames_cnt = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         frame_count = 0
 
-        while True:
+        while frames_cnt < frame_count:
+            cap.set(cv2.CAP_PROP_POS_FRAMES, frame_count)
             ret, image = cap.read()
             if ret == False:
                 break
-
-            frame_count += 1
-
-            if not frame_count % skip_count == 0:
-                continue
+            frame_count += frame_rate
 
             img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
             img = cv2.resize(img, (320, 320))

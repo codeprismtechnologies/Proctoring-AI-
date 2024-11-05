@@ -177,31 +177,35 @@ def track_eye(video_path, res_dict):
     eye_right_count = 0
     gaze_direction = 0 # 1: left, 2: right
     sustained_gaze = False
-    skip_count = int(os.getenv("FRAMETOANALYSE", 90))
 
     try:
         start_time = time.time()
         logger.info("Starting eye tracking")
 
         cap = cv2.VideoCapture(video_path)
+        frame_rate = cap.get(cv2.CAP_PROP_FPS)
+
+        # Get video properties
+        frames_cnt = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        logger.info(f"Frame rate: {frame_rate} FPS")
+        logger.info(f"Frames count: {frames_cnt}")
+
         ret, img = cap.read()
         thresh = img.copy()
         frame_count = 0
 
-        while True:
+        while frame_count < frames_cnt:
+            cap.set(cv2.CAP_PROP_POS_FRAMES, frame_count)
             ret, img = cap.read()
 
             if not ret:
                 break
+            frame_count += frame_rate
             
             rects = find_faces(img, face_model)
             thresh = img.copy()
 
-            frame_count += 1
-
-            if not frame_count % skip_count == 0:
-                continue
-
+            logger.info(f"Frame count: {frame_count}")
             for rect in rects:
                 shape = detect_marks(img, landmark_model, rect)
                 mask = np.zeros(img.shape[:2], dtype=np.uint8)

@@ -162,6 +162,10 @@ def detect_head_pose(video_path, res_dict):
         start_time = time.time()
 
         cap = cv2.VideoCapture(video_path)
+        frame_rate = cap.get(cv2.CAP_PROP_FPS)
+        frames_cnt = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+
+
         ret, img = cap.read()
         size = img.shape
         frame_count = 0
@@ -175,14 +179,13 @@ def detect_head_pose(video_path, res_dict):
                                 [0, focal_length, center[1]],
                                 [0, 0, 1]], dtype = "double"
                                 )
-        while True:
+        while frame_count < frames_cnt:
+            cap.set(cv2.CAP_PROP_POS_FRAMES, frame_count)
             ret, img = cap.read()
             if not ret:
                 break
 
-            frame_count += 1
-            if not frame_count % skip_count == 0:
-                continue
+            frame_count += frame_rate
 
             faces = find_faces(img, face_model)
             for face in faces:
