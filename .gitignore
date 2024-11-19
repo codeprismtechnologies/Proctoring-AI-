@@ -83,8 +83,9 @@ fabric.properties
 proctoring
 venv
 __pycache__
-models/yolov3.weights
+# models/yolov3.weights
 logs/*
 .env
 .DS_Store
 **.pyc
+reports

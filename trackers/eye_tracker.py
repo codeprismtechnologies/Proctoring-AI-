@@ -183,7 +183,7 @@ def track_eye(video_path, res_dict):
         logger.info("Starting eye tracking")
 
         cap = cv2.VideoCapture(video_path)
-        frame_rate = cap.get(cv2.CAP_PROP_FPS)
+        frame_rate = round(cap.get(cv2.CAP_PROP_FPS))
 
         # Get video properties
         frames_cnt = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))

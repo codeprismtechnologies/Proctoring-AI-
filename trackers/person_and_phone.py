@@ -349,11 +349,11 @@ def detect_phone_and_person(video_path, res_dict):
         start_time = time.time()
         logger.info("Starting phone and person detection")
         cap = cv2.VideoCapture(video_path)
-        frame_rate = cap.get(cv2.CAP_PROP_FPS)
+        frame_rate = round(cap.get(cv2.CAP_PROP_FPS))
         frames_cnt = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         frame_count = 0
 
-        while frames_cnt < frame_count:
+        while frame_count < frames_cnt:
             cap.set(cv2.CAP_PROP_POS_FRAMES, frame_count)
             ret, image = cap.read()
             if ret == False:

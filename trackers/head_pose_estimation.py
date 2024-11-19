@@ -155,14 +155,13 @@ def detect_head_pose(video_path, res_dict):
     head_down = 0
     head_pose_direction = 0 # 1: down, 2: up, 3: right, 4: left
     sustained_detection = False
-    skip_count = int(os.getenv("FRAMETOANALYSE", 90))
 
     try:
         logger.info("Starting head pose estimation")
         start_time = time.time()
 
         cap = cv2.VideoCapture(video_path)
-        frame_rate = cap.get(cv2.CAP_PROP_FPS)
+        frame_rate = round(cap.get(cv2.CAP_PROP_FPS))
         frames_cnt = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
 

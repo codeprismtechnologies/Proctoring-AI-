@@ -35,7 +35,7 @@ def mouth_opening_detector(video_path, res_dict):
     frame_count = 0
     try:
         cap = cv2.VideoCapture(video_path)
-        frame_rate = cap.get(cv2.CAP_PROP_FPS)
+        frame_rate = round(cap.get(cv2.CAP_PROP_FPS))
         frames_cnt = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         mouth_open_detected = 0
         sustained_detection = False
@@ -90,7 +90,7 @@ def mouth_opening_detector(video_path, res_dict):
         d_outer[:] = [x / 100 for x in d_outer]
         d_inner[:] = [x / 100 for x in d_inner]
 
-        while frames_cnt < frame_count:
+        while frame_count < frames_cnt:
             cap.set(cv2.CAP_PROP_POS_FRAMES, frame_count)
             ret, img = cap.read()
             if not ret:
