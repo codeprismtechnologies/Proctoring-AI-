@@ -78,7 +78,7 @@ def read_audio_features(audio_feature_path, frames):
         aud = pd.read_csv(audio_feature_path, header=None)
         aud_features = np.array(aud)
         logger.info("Extracted features present")
-    except FileNotFoundError:
+    except Exception as e:
         aud_features = np.zeros((frames.shape[0], 68))
         logger.error("Extracted features not present")
 
