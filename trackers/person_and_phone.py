@@ -407,7 +407,7 @@ def detect_phone_and_person(video_path, res_dict):
                     multiple_persons_detected += 1
                     sustained_detection = True
                 
-            image = draw_outputs(image, (boxes, scores, classes, nums), class_names)
+            # image = draw_outputs(image, (boxes, scores, classes, nums), class_names)
 
             # cv2.imshow('Prediction', image)
             # if cv2.waitKey(1) & 0xFF == ord('q'):

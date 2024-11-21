@@ -154,9 +154,9 @@ def print_eye_pos(img, left, right):
         elif left == 3:
             print('Looking up')
             text = 'up'
-        font = cv2.FONT_HERSHEY_SIMPLEX 
-        cv2.putText(img, text, (30, 30), font,  
-                   1, (0, 255, 255), 2, cv2.LINE_AA)
+        # font = cv2.FONT_HERSHEY_SIMPLEX 
+        # cv2.putText(img, text, (30, 30), font,  
+        #            1, (0, 255, 255), 2, cv2.LINE_AA)
         return text
 
 face_model = get_face_detector()
@@ -164,13 +164,13 @@ landmark_model = get_landmark_model()
 left = [36, 37, 38, 39, 40, 41]
 right = [42, 43, 44, 45, 46, 47]
 
-cv2.namedWindow("image")
+# cv2.namedWindow("image")
 kernel = np.ones((9, 9), np.uint8)
 
 def nothing(x):
     pass
 
-cv2.createTrackbar("threshold", "image", 75, 255, nothing)
+# cv2.createTrackbar("threshold", "image", 75, 255, nothing)
 
 def track_eye(video_path, res_dict):
     eye_left_count = 0

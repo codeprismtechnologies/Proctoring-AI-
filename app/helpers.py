@@ -1,7 +1,7 @@
 import os
 import subprocess
 import time
-import uuid
+import gc
 
 import cv2
 from loguru import logger
@@ -141,6 +141,12 @@ def make_prediction(video_temp_path, audio_temp_path, audio_feature_path):
     res["Neuroticism"] = round(prediction[4] * 100)
 
     logger.info(f"OCEAN Traits: {res}")
+
+    # Unload the loaded model
+    del model
+    tf.keras.backend.clear_session(free_memory=True)
+    gc.collect()
+
     return res
 
 
