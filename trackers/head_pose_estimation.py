@@ -153,6 +153,7 @@ def detect_head_pose(video_path, res_dict):
     head_right = 0
     head_up = 0
     head_down = 0
+    head_pose = 0
     head_pose_direction = 0 # 1: down, 2: up, 3: right, 4: left
     sustained_detection = False
 
@@ -241,6 +242,9 @@ def detect_head_pose(video_path, res_dict):
                         logger.info('Head down')
                         head_down += 1
                         sustained_detection = True
+                        res_dict["violated_frames"].add(frame_count)
+                        if head_down > 1:
+                            head_pose = 1
                     cv2.putText(img, 'Head down', (30, 30), font, 2, (255, 255, 128), 3)
                 elif ang1 <= -48: #-48
                     if head_pose_direction != 2:
@@ -259,6 +263,9 @@ def detect_head_pose(video_path, res_dict):
                     if not sustained_detection:
                         logger.info('Head right')
                         head_right += 1
+                        res_dict["violated_frames"].add(frame_count)
+                        if head_right > 1:
+                            head_pose = 1
                         sustained_detection = True
                     cv2.putText(img, 'Head right', (90, 30), font, 2, (255, 255, 128), 3)
                 elif ang2 <= -48: # 48
@@ -269,7 +276,9 @@ def detect_head_pose(video_path, res_dict):
                         logger.info('Head left')
                         head_left += 1
                         sustained_detection = True
-                
+                        res_dict["violated_frames"].add(frame_count)
+                        if head_left > 1:
+                            head_pose = 1
                 cv2.putText(img, str(ang1), tuple(p1), font, 2, (128, 255, 255), 3)
                 cv2.putText(img, str(ang2), tuple(x1), font, 2, (255, 255, 128), 3)
                 # cv2.imshow('img', img)
@@ -283,8 +292,9 @@ def detect_head_pose(video_path, res_dict):
     cap.release()
 
     logger.info(f"detect_head_pose: {time.time() - start_time}")
-    res_dict["Head Down"] = head_down
-    res_dict["Head Up"] = head_up
-    res_dict["Head Right"] = head_right
-    res_dict["Head Left"] = head_left
+    res_dict["head_down"] = head_down
+    res_dict["head_up"] = head_up
+    res_dict["head_right"] = head_right
+    res_dict["head_left"] = head_left
+    res_dict["head_pose"] = head_pose
     return res_dict

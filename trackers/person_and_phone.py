@@ -351,6 +351,7 @@ def detect_phone_and_person(video_path, res_dict):
         cap = cv2.VideoCapture(video_path)
         frame_rate = round(cap.get(cv2.CAP_PROP_FPS))
         frames_cnt = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        images_captured = frames_cnt // frame_rate
         frame_count = 0
 
         while frame_count < frames_cnt:
@@ -390,6 +391,7 @@ def detect_phone_and_person(video_path, res_dict):
                     logger.info("Mobile Phone detected")
                     mobile_phone_detected += 1
                     sustained_detection = True
+                    res_dict["violated_frames"].add(frame_count)
             elif curr == "no_person":
                 if event_no != 2:
                     sustained_detection = False
@@ -398,6 +400,7 @@ def detect_phone_and_person(video_path, res_dict):
                     logger.info("No person detected")
                     no_persons_detected += 1
                     sustained_detection = True
+                    res_dict["violated_frames"].add(frame_count)
             elif curr == "multiple_persons":
                 if event_no != 3:
                     sustained_detection = False
@@ -406,6 +409,7 @@ def detect_phone_and_person(video_path, res_dict):
                     logger.info("Multiple persons detected")
                     multiple_persons_detected += 1
                     sustained_detection = True
+                    res_dict["violated_frames"].add(frame_count)
                 
             # image = draw_outputs(image, (boxes, scores, classes, nums), class_names)
 
@@ -419,8 +423,9 @@ def detect_phone_and_person(video_path, res_dict):
 
     end_time = time.time()
     logger.info(f"detect_phone_and_person: {end_time - start_time} secs")
-    res_dict["Multiple Persons"] = multiple_persons_detected
-    res_dict["No Person"] = no_persons_detected
-    res_dict["Mobile Phone"] = mobile_phone_detected
+    res_dict["multiple_faces"] = multiple_persons_detected
+    res_dict["no_faces"] = no_persons_detected
+    res_dict["mobile_detected"] = mobile_phone_detected
+    res_dict["images_captured"] = images_captured
 
     return res_dict

@@ -89,3 +89,4 @@ logs/*
 .DS_Store
 **.pyc
 reports
+tmp/

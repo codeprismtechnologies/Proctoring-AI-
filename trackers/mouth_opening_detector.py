@@ -117,6 +117,7 @@ def mouth_opening_detector(video_path, res_dict):
                         logger.info('Mouth open')
                         mouth_open_detected += 1
                         sustained_detection = True
+                        res_dict["violated_frames"].add(frame_count)
                     # cv2.putText(img, 'Mouth open', (30, 30), font,
                     #             1, (0, 255, 255), 2)
                 else:
@@ -133,5 +134,5 @@ def mouth_opening_detector(video_path, res_dict):
     cap.release()
     # cv2.destroyAllWindows()
     logger.info(f"mouth_opening_detector : {time.time() - start} secs")
-    res_dict["Mouth Open"] = mouth_open_detected
+    res_dict["mouth_open"] = mouth_open_detected
     return res_dict

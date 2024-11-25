@@ -9,7 +9,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from loguru import logger
 
-from app.generate_pdf import generate_pdf
+from app.generate_pdf import generate_pdf, generate_proctoring_report
 from app.helpers import convert_to_mp4, make_prediction, cleanup_temp_files
 from app.llm import generate_personality_report
 from app.models import VideoRequest
@@ -31,13 +31,15 @@ load_dotenv()
 
 
 @app.post("/analyse-proctoring")
-def read_root(video_url: str = None):
+def proctoring_analysis(video_url: str = None):
     start_time = time.time()
     logger.info("Starting video analysis")
 
     res_dict = {}
+    res_dict["violated_frames"] = set()
     id = uuid.uuid4()
     video_temp_path = os.path.join(TEMP_DIR, f"{id}.mp4")
+    pdf_temp_path = os.path.join(TEMP_DIR, f"{id}.pdf")
     os.makedirs(TEMP_DIR, exist_ok=True)
     convert_to_mp4(video_url, video_temp_path)
 
@@ -56,16 +58,17 @@ def read_root(video_url: str = None):
         res_dict = future_mouth.result()
 
         cleanup_temp_files(video_temp_path)
-        shutil.rmtree(TEMP_DIR)
 
     logger.info(f"Res dict: {res_dict}")
+
+    generate_proctoring_report(pdf_temp_path, res_dict)
     logger.info(f"Proctoring completed in {round(time.time() - start_time, 2)} seconds")
 
-    return {"message": "success", "data": res_dict}
+    return FileResponse(pdf_temp_path, media_type="application/pdf", filename="Proctoring.pdf")
 
 
 @app.post("/predict-personality")
-async def personality_prediction(request: VideoRequest):
+def personality_prediction(request: VideoRequest):
     start = time.time()
     id = uuid.uuid4()
     logger.info("Start of predict-personality api")
@@ -82,7 +85,6 @@ async def personality_prediction(request: VideoRequest):
     convert_to_mp4(video_url, video_temp_path)
     ocean_traits = make_prediction(video_temp_path, audio_temp_path, audio_feature_path)
     cleanup_temp_files(video_temp_path, audio_temp_path, audio_feature_path)
-    shutil.rmtree(TEMP_DIR)
 
     personality_report = generate_personality_report(ocean_traits)
     while not personality_report:

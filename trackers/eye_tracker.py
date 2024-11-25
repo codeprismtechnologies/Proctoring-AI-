@@ -177,6 +177,7 @@ def track_eye(video_path, res_dict):
     eye_right_count = 0
     gaze_direction = 0 # 1: left, 2: right
     sustained_gaze = False
+    eye_tracker = 0
 
     try:
         start_time = time.time()
@@ -233,6 +234,7 @@ def track_eye(video_path, res_dict):
                     if not sustained_gaze:
                         eye_left_count += 1
                         sustained_gaze = True
+                        res_dict["violated_frames"].add(frame_count)
                 elif pos == "right":
                     if gaze_direction != 2:
                         sustained_gaze = False
@@ -240,6 +242,7 @@ def track_eye(video_path, res_dict):
                     if not sustained_gaze:
                         eye_right_count += 1
                         sustained_gaze = True
+                        res_dict["violated_frames"].add(frame_count)
                 else:
                     gaze_direction = 0
                     sustained_gaze = False
@@ -261,7 +264,11 @@ def track_eye(video_path, res_dict):
     logger.info(f"track_eye: {time.time() - start_time} secs")
     logger.info("Eye tracking completed")
 
-    res_dict["Eye Left"] = eye_left_count
-    res_dict["Eye Right"] = eye_right_count
+    if eye_left_count > 0 or eye_right_count > 0:
+        eye_tracker = 1
+
+    res_dict["eye_left"] = eye_left_count
+    res_dict["eye_right"] = eye_right_count
+    res_dict["eye_tracker"] = eye_tracker
     print(res_dict)
     return res_dict
