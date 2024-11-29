@@ -2,3 +2,4 @@
 *.vcd filter=lfs diff=lfs merge=lfs -text
 *.dat filter=lfs diff=lfs merge=lfs -text
 models/yolov3.weights filter=lfs diff=lfs merge=lfs -text
+models/mod_aud_vid.h5 filter=lfs diff=lfs merge=lfs -text
