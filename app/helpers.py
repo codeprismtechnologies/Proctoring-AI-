@@ -2,12 +2,17 @@ import os
 import subprocess
 import time
 import gc
+import shutil
 
 import cv2
 from loguru import logger
 import numpy as np
 import pandas as pd
+from dotenv import load_dotenv
 import tensorflow as tf
+
+
+load_dotenv()
 
 def convert_to_mp4(video_path, output_path):
     """
@@ -22,7 +27,7 @@ def convert_to_mp4(video_path, output_path):
     logger.info(f"Conversion completed in {time.time() - start}")
 
 
-def extract_audio(video_path, output_path):
+def extract_audio_feat(video_path, output_path, feature_path):
     """
     Extract audio from a video file and save it to a specified path.
 
@@ -36,6 +41,16 @@ def extract_audio(video_path, output_path):
             logger.error(f"Audio extraction failed")
     except Exception as e:
         logger.error(f"Audio extraction failed: {e}")
+
+    pyaudio_path = os.getenv("PYAUDIO_PATH")
+    feat_command = f"python3 {pyaudio_path}/pyAudioAnalysis/audioAnalysis.py featureExtractionFile -i \"{output_path}\" -mw 1.0 -ms 1.0 -sw 1.0 -ss 1.0 -o \"{feature_path}\""
+    result = subprocess.call(feat_command, shell=True)
+
+
+def clean_audio_features(feature_directory_path):
+    for i in os.listdir(feature_directory_path):
+        if i.endswith(".npy"):
+            os.remove(f"{feature_directory_path}/" + i)
 
 
 def extract_frames(video_path):
@@ -115,7 +130,7 @@ def load_model():
     )
 
 
-def make_prediction(video_temp_path, audio_temp_path, audio_feature_path):
+def make_prediction(video_temp_path, audio_temp_path, temp_dir, id):
     """
     Make predictions on personality traits from video and audio features.
 
@@ -124,11 +139,16 @@ def make_prediction(video_temp_path, audio_temp_path, audio_feature_path):
     :param audio_feature_path: Path to the audio features CSV file.
     :return: A dictionary of predicted OCEAN traits.
     """
-    audio_feature_path = extract_audio(video_temp_path, audio_temp_path)
+    feature_directory_path = os.path.join(temp_dir, str(id))
+    os.makedirs(feature_directory_path, exist_ok=True)
+    audio_feature_path = os.path.join(feature_directory_path, "audio_features")
+    extract_audio_feat(video_temp_path, audio_temp_path, audio_feature_path)
+    clean_audio_features(f"{temp_dir}/{id}")
 
     res = {}
     frames = extract_frames(video_temp_path)
-    aud_features, frames = read_audio_features(audio_feature_path, frames)
+    logger.info(f"{audio_feature_path}_st.csv")
+    aud_features, frames = read_audio_features(f"{audio_feature_path}_st.csv", frames)
 
     model = load_model()
     prediction = model.predict([frames[np.newaxis, ...], aud_features[np.newaxis, ...]])
@@ -142,9 +162,11 @@ def make_prediction(video_temp_path, audio_temp_path, audio_feature_path):
 
     logger.info(f"OCEAN Traits: {res}")
 
+    shutil.rmtree(feature_directory_path)
+
     # Unload the loaded model
     del model
-    tf.keras.backend.clear_session(free_memory=True)
+    tf.keras.backend.clear_session()
     gc.collect()
 
     return res

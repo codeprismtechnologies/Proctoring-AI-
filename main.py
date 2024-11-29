@@ -79,12 +79,11 @@ def personality_prediction(request: VideoRequest):
     """
     video_temp_path = os.path.join(TEMP_DIR, f"{id}.mp4")
     audio_temp_path = os.path.join(TEMP_DIR, f"{id}.wav")
-    audio_feature_path = os.path.join(TEMP_DIR, f"{id}.csv")
     os.makedirs(TEMP_DIR, exist_ok=True)
 
     convert_to_mp4(video_url, video_temp_path)
-    ocean_traits = make_prediction(video_temp_path, audio_temp_path, audio_feature_path)
-    cleanup_temp_files(video_temp_path, audio_temp_path, audio_feature_path)
+    ocean_traits = make_prediction(video_temp_path, audio_temp_path, TEMP_DIR, id)
+    cleanup_temp_files(video_temp_path, audio_temp_path)
 
     personality_report = generate_personality_report(ocean_traits)
     while not personality_report:
