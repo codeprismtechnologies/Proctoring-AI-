@@ -31,8 +31,9 @@ load_dotenv()
 
 
 @app.post("/analyse-proctoring")
-def proctoring_analysis(video_url: str = None):
+def proctoring_analysis(request: VideoRequest):
     start_time = time.time()
+    video_url = request.video_url
     logger.info("Starting video analysis")
 
     res_dict = {}

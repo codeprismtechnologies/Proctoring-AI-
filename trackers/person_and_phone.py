@@ -334,16 +334,14 @@ def weights_download(out='models/yolov3.weights'):
 yolo = YoloV3()
 load_darknet_weights(yolo, 'models/yolov3.weights') 
 
-# video_path = "https://codeprism-assessment.s3.ap-south-1.amazonaws.com/recordings/138-529-dc7da4e4eba4bf6d135dd7e5-video.webm"
-
 
 def detect_phone_and_person(video_path, res_dict):
     multiple_persons_detected = 0
     no_persons_detected = 0
     mobile_phone_detected = 0
-    event_no = 0 # 1:Phone, 2:No person, 3:Multiple persons
-    sustained_detection = False
-    curr = ""
+
+    phone_event = {"event_no": 0}
+    person_event = {"event_no": 0, "curr": ""}
 
     try:
         start_time = time.time()
@@ -359,57 +357,55 @@ def detect_phone_and_person(video_path, res_dict):
             ret, image = cap.read()
             if ret == False:
                 break
-            frame_count += frame_rate
 
             img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
             img = cv2.resize(img, (320, 320))
             img = img.astype(np.float32)
             img = np.expand_dims(img, 0)
             img = img / 255
-            class_names = [c.strip() for c in open("models/classes.TXT").readlines()]
+            # class_names = [c.strip() for c in open("models/classes.TXT").readlines()]
             boxes, scores, classes, nums = yolo(img)
-            count=0
+            count = 0
+            new_phone_event_detected = False
+            new_person_event_detected = False
 
             for i in range(nums[0]):
-                if int(classes[0][i] == 0):
+                if int(classes[0][i]) == 0:
                     count += 1
-                if int(classes[0][i] == 67):
-                    curr = "phone"
-                    event_no = 1
+                if int(classes[0][i]) == 67:
+                    new_phone_event_detected = True
             if count == 0:
-                curr = "no_person"
-                event_no = 2
+                person_event["curr"] = "no_person"
+                new_person_event_detected = True
             elif count > 1:
-                curr = "multiple_persons"
-                event_no = 3
+                person_event["curr"] = "multiple_persons"
+                new_person_event_detected = True
 
-            if curr == "phone":
-                if event_no != 1:
-                    sustained_detection = False
-                event_no = 1
-                if not sustained_detection:
+            if new_phone_event_detected:
+                if phone_event["event_no"] != 1:
                     logger.info("Mobile Phone detected")
                     mobile_phone_detected += 1
-                    sustained_detection = True
                     res_dict["violated_frames"].add(frame_count)
-            elif curr == "no_person":
-                if event_no != 2:
-                    sustained_detection = False
-                event_no = 2
-                if not sustained_detection:
-                    logger.info("No person detected")
-                    no_persons_detected += 1
-                    sustained_detection = True
-                    res_dict["violated_frames"].add(frame_count)
-            elif curr == "multiple_persons":
-                if event_no != 3:
-                    sustained_detection = False
-                event_no = 3
-                if not sustained_detection:
-                    logger.info("Multiple persons detected")
-                    multiple_persons_detected += 1
-                    sustained_detection = True
-                    res_dict["violated_frames"].add(frame_count)
+                phone_event["event_no"] = 1
+            else:
+                phone_event["event_no"] = 0
+
+            if new_person_event_detected:
+                event_map = {"no_person": 2, "multiple_persons": 3}
+                if person_event["curr"] in event_map:
+                    if person_event["event_no"] != event_map[person_event["curr"]]:
+                        logger.info(f"{person_event['curr']} detected")
+                        res_dict["violated_frames"].add(frame_count)
+                        if person_event["curr"] == "no_person":
+                            no_persons_detected += 1
+                        else:
+                            multiple_persons_detected += 1
+                    person_event["event_no"] = event_map[person_event["curr"]]
+            else:
+                person_event["curr"] = ""
+                person_event["event_no"] = 0
+
+            frame_count += frame_rate
                 
             # image = draw_outputs(image, (boxes, scores, classes, nums), class_names)
 

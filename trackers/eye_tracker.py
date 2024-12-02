@@ -176,7 +176,6 @@ def track_eye(video_path, res_dict):
     eye_left_count = 0
     eye_right_count = 0
     gaze_direction = 0 # 1: left, 2: right
-    sustained_gaze = False
     eye_tracker = 0
 
     try:
@@ -227,25 +226,16 @@ def track_eye(video_path, res_dict):
                 eyeball_pos_right = contouring(thresh[:, mid:], mid, img, end_points_right, True)
                 pos = print_eye_pos(img, eyeball_pos_left, eyeball_pos_right)
 
-                if pos == "left":
-                    if gaze_direction != 1:
-                        sustained_gaze = False
-                    gaze_direction = 1
-                    if not sustained_gaze:
-                        eye_left_count += 1
-                        sustained_gaze = True
+                if pos in ["left", "right"]:
+                    if (pos == "left" and gaze_direction != 1) or (pos == "right" and gaze_direction != 2):
+                        if pos == "left":
+                            eye_left_count += 1
+                        else:
+                            eye_right_count += 1
                         res_dict["violated_frames"].add(frame_count)
-                elif pos == "right":
-                    if gaze_direction != 2:
-                        sustained_gaze = False
-                    gaze_direction = 2
-                    if not sustained_gaze:
-                        eye_right_count += 1
-                        sustained_gaze = True
-                        res_dict["violated_frames"].add(frame_count)
+                    gaze_direction = 1 if pos == "left" else 2
                 else:
                     gaze_direction = 0
-                    sustained_gaze = False
 
                 # for (x, y) in shape[36:48]:
                 #     cv2.circle(img, (x, y), 2, (255, 0, 0), -1)

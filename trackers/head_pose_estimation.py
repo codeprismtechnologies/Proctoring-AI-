@@ -155,7 +155,6 @@ def detect_head_pose(video_path, res_dict):
     head_down = 0
     head_pose = 0
     head_pose_direction = 0 # 1: down, 2: up, 3: right, 4: left
-    sustained_detection = False
 
     try:
         logger.info("Starting head pose estimation")
@@ -233,54 +232,30 @@ def detect_head_pose(video_path, res_dict):
                 except:
                     ang2 = 90
                     
-                    # print('div by zero error')
-                if ang1 >= 48: # 48
-                    if head_pose_direction != 1:
-                        sustained_detection = False
-                    head_pose_direction = 1
-                    if not sustained_detection:
-                        logger.info('Head down')
-                        head_down += 1
-                        sustained_detection = True
-                        res_dict["violated_frames"].add(frame_count)
-                        if head_down > 1:
-                            head_pose = 1
-                    cv2.putText(img, 'Head down', (30, 30), font, 2, (255, 255, 128), 3)
-                elif ang1 <= -48: #-48
-                    if head_pose_direction != 2:
-                        sustained_detection = False
-                    head_pose_direction = 2
-                    if not sustained_detection:
-                        logger.info('Head up')
-                        head_up += 1
-                        sustained_detection = True
-                    cv2.putText(img, 'Head up', (30, 30), font, 2, (255, 255, 128), 3)
-                
-                if ang2 >= 48: # 48
-                    if head_pose_direction != 3:
-                        sustained_detection = False
-                    head_pose_direction = 3
-                    if not sustained_detection:
-                        logger.info('Head right')
-                        head_right += 1
-                        res_dict["violated_frames"].add(frame_count)
-                        if head_right > 1:
-                            head_pose = 1
-                        sustained_detection = True
-                    cv2.putText(img, 'Head right', (90, 30), font, 2, (255, 255, 128), 3)
-                elif ang2 <= -48: # 48
-                    if head_pose_direction != 4:
-                        sustained_detection = False
-                    head_pose_direction = 4
-                    if not sustained_detection:
-                        logger.info('Head left')
-                        head_left += 1
-                        sustained_detection = True
-                        res_dict["violated_frames"].add(frame_count)
-                        if head_left > 1:
-                            head_pose = 1
-                cv2.putText(img, str(ang1), tuple(p1), font, 2, (128, 255, 255), 3)
-                cv2.putText(img, str(ang2), tuple(x1), font, 2, (255, 255, 128), 3)
+                angles = [
+                    (ang1, 48, "Head down", 1, head_down),
+                    (ang1, -48, "Head up", 2, head_up),
+                    (ang2, 48, "Head right", 3, head_right),
+                    (ang2, -48, "Head left", 4, head_left),
+                ]
+
+                condition_met = False
+                for angle, threshold, direction, pose_dir, count in angles:
+                    if (angle >= threshold if threshold > 0 else angle <= threshold):
+                        condition_met = True
+                        if head_pose_direction != pose_dir:
+                            logger.info(direction)
+                            count += 1
+                            if direction in ['Head down', 'Head right']:
+                                res_dict["violated_frames"].add(frame_count)
+                                if count > 1:
+                                    head_pose = 1
+                        head_pose_direction = pose_dir
+
+                if not condition_met:
+                    head_pose_direction = 0
+                # cv2.putText(img, str(ang1), tuple(p1), font, 2, (128, 255, 255), 3)
+                # cv2.putText(img, str(ang2), tuple(x1), font, 2, (255, 255, 128), 3)
                 # cv2.imshow('img', img)
                 # if cv2.waitKey(1) & 0xFF == ord('q'):
                 #     break
