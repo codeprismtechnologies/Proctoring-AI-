@@ -32,7 +32,7 @@ def mouth_opening_detector(video_path, res_dict):
     start = time.time()
     logger.info("Starting mouth opening detection")
     frames_recorded = 0
-    frame_count = 0
+    frame_count = 1
     try:
         cap = cv2.VideoCapture(video_path)
         frame_rate = round(cap.get(cv2.CAP_PROP_FPS))
@@ -42,7 +42,6 @@ def mouth_opening_detector(video_path, res_dict):
 
         while True:
             ret, img = cap.read()
-
             if not ret:
                 break
 
@@ -95,11 +94,8 @@ def mouth_opening_detector(video_path, res_dict):
             ret, img = cap.read()
             if not ret:
                 break
-
-            frame_count += frame_rate
             
             rects = find_faces(img, face_model)
-
             for rect in rects:
                 shape = detect_marks(img, landmark_model, rect)
                 cnt_outer = 0
@@ -122,6 +118,8 @@ def mouth_opening_detector(video_path, res_dict):
                     #             1, (0, 255, 255), 2)
                 else:
                     sustained_detection = False
+
+            frame_count += frame_rate
                 
                 # show the output image with the face detections + facial landmarks
 

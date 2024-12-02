@@ -167,7 +167,7 @@ def detect_head_pose(video_path, res_dict):
 
         ret, img = cap.read()
         size = img.shape
-        frame_count = 0
+        frame_count = 1
 
 
         # Camera internals
@@ -183,8 +183,6 @@ def detect_head_pose(video_path, res_dict):
             ret, img = cap.read()
             if not ret:
                 break
-
-            frame_count += frame_rate
 
             faces = find_faces(img, face_model)
             for face in faces:
@@ -232,28 +230,30 @@ def detect_head_pose(video_path, res_dict):
                 except:
                     ang2 = 90
                     
-                angles = [
-                    (ang1, 48, "Head down", 1, head_down),
-                    (ang1, -48, "Head up", 2, head_up),
-                    (ang2, 48, "Head right", 3, head_right),
-                    (ang2, -48, "Head left", 4, head_left),
-                ]
-
-                condition_met = False
-                for angle, threshold, direction, pose_dir, count in angles:
-                    if (angle >= threshold if threshold > 0 else angle <= threshold):
-                        condition_met = True
-                        if head_pose_direction != pose_dir:
-                            logger.info(direction)
-                            count += 1
-                            if direction in ['Head down', 'Head right']:
-                                res_dict["violated_frames"].add(frame_count)
-                                if count > 1:
-                                    head_pose = 1
-                        head_pose_direction = pose_dir
-
-                if not condition_met:
+                if ang1 >= 48:  # Head down
+                    if head_pose_direction != 1:
+                        head_down += 1
+                        head_pose_direction = 1
+                elif ang1 <= -48:  # Head up
+                    if head_pose_direction != 2:
+                        head_up += 1
+                    head_pose_direction = 2
+                elif ang2 >= 48:  # Head right
+                    if head_pose_direction != 3:
+                        head_pose = 1
+                        head_right += 1
+                        res_dict["violated_frames"].add(frame_count)
+                    head_pose_direction = 3
+                elif ang2 <= -48:  # Head left
+                    if head_pose_direction != 4:
+                        head_pose = 1
+                        head_left += 1
+                        res_dict["violated_frames"].add(frame_count)
+                    head_pose_direction = 4
+                else:
                     head_pose_direction = 0
+                
+            frame_count += frame_rate
                 # cv2.putText(img, str(ang1), tuple(p1), font, 2, (128, 255, 255), 3)
                 # cv2.putText(img, str(ang2), tuple(x1), font, 2, (255, 255, 128), 3)
                 # cv2.imshow('img', img)

@@ -192,7 +192,7 @@ def track_eye(video_path, res_dict):
 
         ret, img = cap.read()
         thresh = img.copy()
-        frame_count = 0
+        frame_count = 1
 
         while frame_count < frames_cnt:
             cap.set(cv2.CAP_PROP_POS_FRAMES, frame_count)
@@ -200,7 +200,6 @@ def track_eye(video_path, res_dict):
 
             if not ret:
                 break
-            frame_count += frame_rate
             
             rects = find_faces(img, face_model)
             thresh = img.copy()
@@ -237,6 +236,7 @@ def track_eye(video_path, res_dict):
                 else:
                     gaze_direction = 0
 
+            frame_count += frame_rate
                 # for (x, y) in shape[36:48]:
                 #     cv2.circle(img, (x, y), 2, (255, 0, 0), -1)
                 
