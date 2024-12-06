@@ -192,7 +192,7 @@ def track_eye(video_path, res_dict):
 
         ret, img = cap.read()
         thresh = img.copy()
-        frame_count = 1
+        frame_count = 0
 
         while frame_count < frames_cnt:
             cap.set(cv2.CAP_PROP_POS_FRAMES, frame_count)

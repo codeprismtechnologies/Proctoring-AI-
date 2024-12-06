@@ -167,7 +167,7 @@ def detect_head_pose(video_path, res_dict):
 
         ret, img = cap.read()
         size = img.shape
-        frame_count = 1
+        frame_count = 0
 
 
         # Camera internals

@@ -32,7 +32,7 @@ def mouth_opening_detector(video_path, res_dict):
     start = time.time()
     logger.info("Starting mouth opening detection")
     frames_recorded = 0
-    frame_count = 1
+    frame_count = 0
     try:
         cap = cv2.VideoCapture(video_path)
         frame_rate = round(cap.get(cv2.CAP_PROP_FPS))

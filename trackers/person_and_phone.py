@@ -350,7 +350,7 @@ def detect_phone_and_person(video_path, res_dict):
         frame_rate = round(cap.get(cv2.CAP_PROP_FPS))
         frames_cnt = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         images_captured = frames_cnt // frame_rate
-        frame_count = 1
+        frame_count = 0
 
         while frame_count < frames_cnt:
             cap.set(cv2.CAP_PROP_POS_FRAMES, frame_count)
@@ -394,7 +394,7 @@ def detect_phone_and_person(video_path, res_dict):
                 event_map = {"no_person": 2, "multiple_persons": 3}
                 if person_event["curr"] in event_map:
                     if person_event["event_no"] != event_map[person_event["curr"]]:
-                        logger.info(f"{person_event['curr']} detected")
+                        logger.info(f"{frame_count}: {person_event['curr']} detected")
                         res_dict["violated_frames"].add(frame_count)
                         if person_event["curr"] == "no_person":
                             no_persons_detected += 1
