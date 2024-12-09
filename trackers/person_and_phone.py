@@ -350,7 +350,7 @@ def detect_phone_and_person(video_path, res_dict):
         frame_rate = round(cap.get(cv2.CAP_PROP_FPS))
         frames_cnt = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         images_captured = frames_cnt // frame_rate
-        frame_count = 0
+        frame_count = 8
 
         while frame_count < frames_cnt:
             cap.set(cv2.CAP_PROP_POS_FRAMES, frame_count)
