@@ -5,8 +5,9 @@ import uuid
 from concurrent.futures import ThreadPoolExecutor
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse
+from fastapi.templating import Jinja2Templates
 from loguru import logger
 
 from app.generate_pdf import generate_pdf, generate_proctoring_report
@@ -25,8 +26,8 @@ logger.add("logs/app.log", format=log_format, level="INFO")
 
 app = FastAPI()
 
+templates = Jinja2Templates(directory="templates")
 TEMP_DIR = "tmp/uploaded_files"
-
 load_dotenv()
 
 
@@ -34,6 +35,7 @@ load_dotenv()
 def proctoring_analysis(request: VideoRequest):
     start_time = time.time()
     video_url = request.video_url
+    logger.info(f"url: {video_url}")
     logger.info("Starting video analysis")
 
     res_dict = {}
@@ -99,6 +101,10 @@ def personality_prediction(request: VideoRequest):
     return FileResponse(
         pdf_generated, media_type="application/pdf", filename="Personality Report.pdf"
     )
+
+@app.get("/", response_class=FileResponse)
+def serve_html(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
 
 
 if __name__ == "__main__":
