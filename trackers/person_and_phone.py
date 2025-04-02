@@ -343,6 +343,7 @@ def detect_phone_and_person(video_path, res_dict):
     phone_event = {"event_no": 0}
     person_event = {"event_no": 0, "curr": ""}
     frames_captured = None
+    images_captured = 0
 
     try:
         start_time = time.time()
